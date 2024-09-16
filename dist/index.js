@@ -175,15 +175,39 @@ function createComment(file, chunk, aiResponses) {
         };
     });
 }
-function createReviewComment(owner, repo, pull_number, comments) {
+function createReviewComment(owner, repo, pull_number, commitId, comments) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield octokit.pulls.createReview({
-            owner,
-            repo,
-            pull_number,
-            comments,
-            event: "COMMENT",
-        });
+        yield Promise.all(comments.map((comment) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield octokit.pulls.createReviewComment({
+                    commit_id: commitId,
+                    owner,
+                    repo,
+                    pull_number,
+                    line: comment.line,
+                    body: comment.body,
+                    path: comment.path
+                });
+                // return await octokit.pulls.createReview({
+                //   owner,
+                //   repo,
+                //   pull_number,
+                //   comments: [comment],
+                //   event: "COMMENT",
+                // });
+            }
+            catch (e) {
+                console.error("Error creating review comment:", e);
+                console.log("Comment:", comment);
+            }
+        })));
+        // await octokit.pulls.createReview({
+        //   owner,
+        //   repo,
+        //   pull_number,
+        //   comments,
+        //   event: "COMMENT",
+        // });
     });
 }
 function main() {
@@ -227,7 +251,7 @@ function main() {
         });
         const comments = yield analyzeCode(filteredDiff, prDetails);
         if (comments.length > 0) {
-            yield createReviewComment(prDetails.owner, prDetails.repo, prDetails.pull_number, comments);
+            yield createReviewComment(prDetails.owner, prDetails.repo, prDetails.pull_number, eventData.after, comments);
         }
     });
 }
