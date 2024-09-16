@@ -172,13 +172,28 @@ async function createReviewComment(
   pull_number: number,
   comments: Array<{ body: string; path: string; line: number }>
 ): Promise<void> {
-  await octokit.pulls.createReview({
-    owner,
-    repo,
-    pull_number,
-    comments,
-    event: "COMMENT",
-  });
+  await Promise.all(comments.map(async(comment) => {
+    try {
+      return await octokit.pulls.createReview({
+        owner,
+        repo,
+        pull_number,
+        comments: [comment],
+        event: "COMMENT",
+      })
+    } catch (e) {
+        console.error("Error creating review comment:", e);
+        console.log("Comment:", comment);
+    }
+    }
+  ));
+  // await octokit.pulls.createReview({
+  //   owner,
+  //   repo,
+  //   pull_number,
+  //   comments,
+  //   event: "COMMENT",
+  // });
 }
 
 async function main() {
