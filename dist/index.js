@@ -179,22 +179,22 @@ function createReviewComment(owner, repo, pull_number, commitId, comments) {
     return __awaiter(this, void 0, void 0, function* () {
         yield Promise.all(comments.map((comment) => __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield octokit.pulls.createReviewComment({
-                    commit_id: commitId,
-                    owner,
-                    repo,
-                    pull_number,
-                    line: comment.line,
-                    body: comment.body,
-                    path: comment.path
-                });
-                // return await octokit.pulls.createReview({
+                // return await octokit.pulls.createReviewComment({
+                //   commit_id: commitId,
                 //   owner,
                 //   repo,
                 //   pull_number,
-                //   comments: [comment],
-                //   event: "COMMENT",
+                //   line: comment.line,
+                //   body: comment.body,
+                //   path: comment.path
                 // });
+                return yield octokit.pulls.createReview({
+                    owner,
+                    repo,
+                    pull_number,
+                    comments: [comment],
+                    event: "COMMENT",
+                });
             }
             catch (e) {
                 console.error("Error creating review comment:", e);
