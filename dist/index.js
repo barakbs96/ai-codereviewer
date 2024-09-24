@@ -92,8 +92,11 @@ function analyzeCode(parsedDiff, prDetails) {
             if (file.to === "/dev/null")
                 continue; // Ignore deleted files
             for (const chunk of file.chunks) {
+                console.log("Chunk:", JSON.stringify(chunk));
                 const prompt = createPrompt(file, chunk, prDetails);
+                console.log("Prompt:", JSON.stringify(prompt));
                 const aiResponse = yield getAIResponse(prompt);
+                console.log("AI Response:", JSON.stringify(aiResponse));
                 if (aiResponse) {
                     const newComments = createComment(file, chunk, aiResponse);
                     if (newComments) {
@@ -177,37 +180,13 @@ function createComment(file, chunk, aiResponses) {
 }
 function createReviewComment(owner, repo, pull_number, commitId, comments) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield Promise.all(comments.map((comment) => __awaiter(this, void 0, void 0, function* () {
-            try {
-                // return await octokit.pulls.createReviewComment({
-                //   commit_id: commitId,
-                //   owner,
-                //   repo,
-                //   pull_number,
-                //   line: comment.line,
-                //   body: comment.body,
-                //   path: comment.path
-                // });
-                return yield octokit.pulls.createReview({
-                    owner,
-                    repo,
-                    pull_number,
-                    comments: [comment],
-                    event: "COMMENT",
-                });
-            }
-            catch (e) {
-                console.error("Error creating review comment:", e);
-                console.log("Comment:", comment);
-            }
-        })));
-        // await octokit.pulls.createReview({
-        //   owner,
-        //   repo,
-        //   pull_number,
-        //   comments,
-        //   event: "COMMENT",
-        // });
+        yield octokit.pulls.createReview({
+            owner,
+            repo,
+            pull_number,
+            comments,
+            event: "COMMENT",
+        });
     });
 }
 function main() {

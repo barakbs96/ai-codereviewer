@@ -65,8 +65,11 @@ async function analyzeCode(
   for (const file of parsedDiff) {
     if (file.to === "/dev/null") continue; // Ignore deleted files
     for (const chunk of file.chunks) {
+      console.log("Chunk:", JSON.stringify(chunk));
       const prompt = createPrompt(file, chunk, prDetails);
+      console.log("Prompt:", JSON.stringify(prompt));
       const aiResponse = await getAIResponse(prompt);
+        console.log("AI Response:", JSON.stringify(aiResponse));
       if (aiResponse) {
         const newComments = createComment(file, chunk, aiResponse);
         if (newComments) {
@@ -173,37 +176,13 @@ async function createReviewComment(
   commitId: string,
   comments: Array<{ body: string; path: string; line: number }>
 ): Promise<void> {
-  await Promise.all(comments.map(async(comment) => {
-    try {
-      // return await octokit.pulls.createReviewComment({
-      //   commit_id: commitId,
-      //   owner,
-      //   repo,
-      //   pull_number,
-      //   line: comment.line,
-      //   body: comment.body,
-      //   path: comment.path
-      // });
-      return await octokit.pulls.createReview({
-        owner,
-        repo,
-        pull_number,
-        comments: [comment],
-        event: "COMMENT",
-      });
-    } catch (e) {
-        console.error("Error creating review comment:", e);
-        console.log("Comment:", comment);
-    }
-    }
-  ));
-  // await octokit.pulls.createReview({
-  //   owner,
-  //   repo,
-  //   pull_number,
-  //   comments,
-  //   event: "COMMENT",
-  // });
+  await octokit.pulls.createReview({
+    owner,
+    repo,
+    pull_number,
+    comments,
+    event: "COMMENT",
+  });
 }
 
 async function main() {
